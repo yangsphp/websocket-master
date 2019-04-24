@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>websocket聊天室</title>
+    <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600" rel="stylesheet">
+    <link rel="stylesheet" href="css/reset.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .message img {
+            float: left;
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
+            border-radius: 50%;
+        }
+
+        .you {
+            margin-left: 60px;
+            margin-top: -39px;
+        }
+
+        .me-header {
+            float: right !important;
+            margin-right: 0 !important;
+        }
+
+        .me {
+            margin-right: 60px;
+            margin-top: -39px;
+        }
+
+        .active-chat::-webkit-scrollbar, .left::-webkit-scrollbar {
+            width: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <div class="container">
+        <div class="left">
+            <div class="top" style="padding: 20px 29px;height: auto;">
+                <div class="" style="font: 400 13.3333px Arial;font-weight: 400;">在线人数：<span id="numbers">0</span> 人
+                </div>
+            </div>
+            <ul class="people">
+            </ul>
+        </div>
+        <div class="right">
+            <div class="top"><span>Tips: <span class="name">PHP之websocket聊天室</span></span></div>
+            <div class="chat active-chat" data-chat="person1"
+                 style="height: auto;border-width: 0px;padding: 10px;height: 483px; padding: 10px;overflow-y: auto;scrollTop: 100px">
+            </div>
+            <div class="write">
+                <a href="javascript:;" class="write-link attach"></a>
+                <input type="text" id="input-value" onkeydown="confirm(event)"/>
+                <a href="javascript:;" class="write-link smiley"></a>
+                <a href="javascript:;" class="write-link send" onclick="send()"></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/index.js"></script>
+<script>
+    var uname = prompt('请输入用户名', 'user' + uuid(8, 16));
+    var avatar = ['bo-jackson.jpg', 'dog.png', 'drake.jpg', 'louis-ck.jpeg', 'michael-jordan.jpg', 'thomas.jpg'];
+    if (avatar[Math.round(Math.random() * 10)]) {
+        var headerimg = "img/" + avatar[Math.round(Math.random() * 10)];
+    } else {
+        var headerimg = "img/" + avatar[0];
+    }
+
+    // 创建一个 websocket 连接
+    var ws = new WebSocket("ws://127.0.0.1:1238");
+
+    // websocket 创建成功事件
+    ws.onopen = function () {
+        var data = "系统消息：建立连接成功";
+        console.log(data);
+
+    };
+
+    // websocket 接收到消息事件
+    ws.onmessage = function (e) {
+        var data = JSON.parse(e.data);
+        switch (data.type) {
+            case 'handShake':
+                console.log(data.msg);
+                //发送用户登录
+                var user_info = {'type': 'login', 'msg': uname, 'headerimg': headerimg};
+                sendMsg(user_info);
+                break;
+            case 'login':
+                userList(data.user_list);
+                systemMessage('系统消息: ' + data.msg + ' 已上线');
+                break;
+            case 'logout':
+                userList(data.user_list);
+                if (data.msg.length > 0) {
+                    systemMessage('系统消息: ' + data.msg + ' 已下线');
+                }
+                break;
+            case 'user':
+                messageList(data);
+                break;
+            case 'system':
+                systemMessage();
+                break;
+        }
+    }
+
+    // websocket 错误事件
+    ws.onerror = function () {
+        var data = "系统消息 : 出错了,请退出重试.";
+        alert(data);
+    };
+
+    function confirm(event) {
+        var key_num = event.keyCode;
+        if (13 == key_num) {
+            send();
+        } else {
+            return false;
+        }
+    }
+
+    function systemMessage(msg) {
+        var html = `<div class="conversation-start">
+            <span>` + msg + `</span>
+        </div>`;
+        var active_chat = document.querySelector('div.active-chat');
+        var oldHtml = active_chat.innerHTML;
+        active_chat.innerHTML = oldHtml + html;
+        active_chat.scrollTop = active_chat.scrollHeight;
+    }
+
+    function send() {
+        var msg = document.querySelector("input#input-value").value;
+        var reg = new RegExp("\r\n", "g");
+        msg = msg.replace(reg, "");
+        sendMsg({type: "user", msg: msg});
+        document.querySelector("input#input-value").value = "";
+    }
+
+    function sendMsg(msg) {
+        var data = JSON.stringify(msg);
+        ws.send(data);
+    }
+
+    function userList(user) {
+        var html = '';
+        for (var i = 0; i < user.length; i++) {
+            html += `<li class="person" data-chat="person1">
+                    <img src="` + user[i].headerimg + `" alt=""/>
+                    <span class="name">` + user[i].username + `</span>
+                    <span class="time">` + user[i].login_time + `</span>
+                    <span class="preview" style="color: green;font-size: 7px;">在线</span>
+                </li>`;
+        }
+        document.querySelector('ul.people').innerHTML = html;
+        document.querySelector('span#numbers').innerHTML = user.length;
+    }
+
+    function messageList(data) {
+        if (data.from == uname) {
+            var html = `<div class="message">
+                    <img class="me-header" src="` + data.headerimg + `" alt=""/>
+                    <div class="bubble me">` + data.msg + `</div>
+                </div>`;
+        } else {
+            var html = `<div class="message">
+                    <img src="` + data.headerimg + `" alt=""/>
+                    <div class="bubble you">` + data.msg + `</div>
+                </div>`;
+        }
+        var active_chat = document.querySelector('div.active-chat');
+        var oldHtml = active_chat.innerHTML;
+        active_chat.innerHTML = oldHtml + html;
+        active_chat.scrollTop = active_chat.scrollHeight;
+    }
+
+    /**
+     * 生产一个全局唯一ID作为用户名的默认值;
+     *
+     * @param len
+     * @param radix
+     * @returns {string}
+     */
+    function uuid(len, radix) {
+        var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split('');
+        var uuid = [], i;
+        radix = radix || chars.length;
+
+        if (len) {
+            for (i = 0; i < len; i++) uuid[i] = chars[0 | Math.random() * radix];
+        } else {
+            var r;
+
+            uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+            uuid[14] = '4';
+
+            for (i = 0; i < 36; i++) {
+                if (!uuid[i]) {
+                    r = 0 | Math.random() * 16;
+                    uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
+                }
+            }
+        }
+
+        return uuid.join('');
+    }
+</script>
+</body>
+</html>
