@@ -12,7 +12,7 @@ class socketServer
     const LISTEN_SOCKET_NUM = 9;
     const LOG_PATH = "./log/";
     private $_ip = "127.0.0.1";
-    private $_port = 1238;
+    private $_port = 1234;
     private $_socketPool = array();
     private $_master = null;
 

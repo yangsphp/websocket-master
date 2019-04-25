@@ -7,6 +7,7 @@
     <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600" rel="stylesheet">
     <link rel="stylesheet" href="css/reset.min.css">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="layer/theme/default/layer.css">
     <style>
         .message img {
             float: left;
@@ -63,9 +64,19 @@
     </div>
 </div>
 
+<script src="js/jquery-2.1.1.min.js"></script>
 <script src="js/index.js"></script>
+<script src="layer/layer.js"></script>
 <script>
-    var uname = prompt('请输入用户名', 'user' + uuid(8, 16));
+    var uname = "user" + uuid(8, 11);
+    layer.open({
+        title: '您的用户名如下',
+        content: uname,
+        closeBtn: 0,
+        yes: function (index, layero) {
+            layer.close(index);
+        }
+    });
     var avatar = ['bo-jackson.jpg', 'dog.png', 'drake.jpg', 'louis-ck.jpeg', 'michael-jordan.jpg', 'thomas.jpg'];
     if (avatar[Math.round(Math.random() * 10)]) {
         var headerimg = "img/" + avatar[Math.round(Math.random() * 10)];
@@ -74,7 +85,7 @@
     }
 
     // 创建一个 websocket 连接
-    var ws = new WebSocket("ws://127.0.0.1:1238");
+    var ws = new WebSocket("ws://127.0.0.1:1234");
 
     // websocket 创建成功事件
     ws.onopen = function () {
@@ -209,7 +220,6 @@
                 }
             }
         }
-
         return uuid.join('');
     }
 </script>
