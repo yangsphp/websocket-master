@@ -122,6 +122,10 @@
                 break;
         }
     }
+	
+	ws.onclose = function() {
+    	console.log("连接关闭，定时重连");
+    };
 
     // websocket 错误事件
     ws.onerror = function () {
