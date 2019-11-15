@@ -83,19 +83,27 @@
     } else {
         var headerimg = "img/" + avatar[0];
     }
+    var ws = null;
+    connect();
+    function connect() {
+        // 创建一个 websocket 连接
+        ws = new WebSocket("ws://127.0.0.1:1234");
+        // websocket 创建成功事件
+        ws.onopen = onopen;
+        // websocket 接收到消息事件
+        ws.onmessage = onmessage;
+        ws.onclose = onclose;
+        ws.onerror = onerror;
+    }
 
-    // 创建一个 websocket 连接
-    var ws = new WebSocket("ws://127.0.0.1:1234");
-
-    // websocket 创建成功事件
-    ws.onopen = function () {
+    function onopen()
+    {
         var data = "系统消息：建立连接成功";
         console.log(data);
+    }
 
-    };
-
-    // websocket 接收到消息事件
-    ws.onmessage = function (e) {
+    function onmessage(e)
+    {
         var data = JSON.parse(e.data);
         switch (data.type) {
             case 'handShake':
@@ -122,16 +130,18 @@
                 break;
         }
     }
-	
-	ws.onclose = function() {
-    	console.log("连接关闭，定时重连");
-    };
+    function onclose()
+    {
+        console.log("连接关闭，定时重连");
+        connect();
+    }
 
     // websocket 错误事件
-    ws.onerror = function () {
+    function onerror()
+    {
         var data = "系统消息 : 出错了,请退出重试.";
-        alert(data);
-    };
+        console.log(data);
+    }
 
     function confirm(event) {
         var key_num = event.keyCode;
