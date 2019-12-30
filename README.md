@@ -15,8 +15,8 @@
 
 ## 界面
 
-![avatar](https://github.com/yangsphp/rbac-master/blob/master/screenshot/1.png)
+![图一](screenshot/1.png)
 
-![avatar](https://github.com/yangsphp/rbac-master/blob/master/screenshot/2.png)
+![图二](screenshot/2.png)
 
 具体设计可查看：[网页实时聊天之PHP实现websocket](https://www.cnblogs.com/yang-2018/p/10762565.html)
