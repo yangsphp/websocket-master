@@ -12,7 +12,7 @@ class socketServer
     const LISTEN_SOCKET_NUM = 9;
     const LOG_PATH = "./log/";
     private $_ip = "127.0.0.1";
-    private $_port = 3130;
+    private $_port = 1234;
     private $_socketPool = array();
     private $_master = null;
 
@@ -80,7 +80,7 @@ class socketServer
                     }
                 }
                 $msg = $this->doEvents($socket, $recv_msg);
-                echo($msg);
+                
                 socket_getpeername ( $socket  , $address ,$port );
                 $this->debug(array(
                     'send_success',
@@ -131,11 +131,7 @@ class socketServer
                 $user_list = array_column($this->_socketPool, 'userInfo');
                 $response['type'] = 'logout';
                 $response['user_list'] = $user_list;
-                if ($nowUserSocket = @$this->_socketPool[(int)$socket]) {
-                    $response['msg'] = $nowUserSocket['userInfo']['username'];
-                }else{
-                    $response['msg'] = '';
-                }
+				$response['msg'] = $msg_content;
                 break;
             case 'user':
                 $userInfo = $this->_socketPool[(int)$socket]['userInfo'];
@@ -279,7 +275,7 @@ class socketServer
     {
         $recv_msg = array(
             'type' => 'logout',
-            'msg' => @$this->_socketPool[(int)$socket]['username'],
+            'msg' => @$this->_socketPool[(int)$socket]['userInfo']['username'],
         );
         unset($this->_socketPool[(int)$socket]);
         return $recv_msg;

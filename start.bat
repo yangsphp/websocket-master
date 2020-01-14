@@ -1,0 +1,2 @@
+php ./socketServer.php
+pause
